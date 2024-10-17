@@ -10,7 +10,7 @@
 	<Description>Wrap Registered .NET DI Services with Cross Cutting concerns</Description>
 	<PackageTags>DI, ServiceCollection, Service, Proxy</PackageTags>
 	<PackageProjectUrl>https://github.com/vertizens/service-proxy</PackageProjectUrl>
-	<PackageReadmeFile>readme.md</PackageReadmeFile>
+	<PackageReadmeFile>README.md</PackageReadmeFile>
 	<PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
 	<PublishRepositoryUrl>true</PublishRepositoryUrl>
 	<IncludeSymbols>true</IncludeSymbols>
@@ -24,6 +24,6 @@
     </PackageReference>
   </ItemGroup>
 	<ItemGroup>
-		<None Include="../../README.md" Pack="true" PackagePath="/" />
+		<None Include="..\..\README.md" Pack="true" PackagePath="\" />
 	</ItemGroup>
 </Project>
