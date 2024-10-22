@@ -1,4 +1,4 @@
-﻿namespace ServiceProxy.Tests;
+﻿namespace Vertizens.ServiceProxy.Tests;
 public interface ITestGeneric<T>
 {
     T DoStuff();
@@ -12,6 +12,7 @@ internal class TestGenericLongImplementation : ITestGeneric<long>
     }
 }
 
+[KeyedService(KeyedServiceConstants.SpecialKeyedService)]
 internal class TestGenericStringImplementation : ITestGeneric<string>
 {
     public string DoStuff()

@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 
-namespace ServiceProxy;
+namespace Vertizens.ServiceProxy;
 internal class ServiceProxyDescriptor
 {
     public required ServiceDescriptor ProxiedService { get; set; }

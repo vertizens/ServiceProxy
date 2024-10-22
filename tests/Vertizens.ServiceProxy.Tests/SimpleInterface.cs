@@ -1,4 +1,4 @@
-﻿namespace ServiceProxy.Tests;
+﻿namespace Vertizens.ServiceProxy.Tests;
 public interface ITestSimple { }
 
 internal class TestSimpleImplementation : ITestSimple { }

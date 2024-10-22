@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 
-namespace ServiceProxy.Tests;
+namespace Vertizens.ServiceProxy.Tests;
 public partial class ServiceCollectionExtensions
 {
     [Fact]
@@ -12,12 +12,14 @@ public partial class ServiceCollectionExtensions
 
         var testServiceLong = services.SingleOrDefault(x => x.ServiceType == typeof(ITestGeneric<long>));
         Assert.NotNull(testServiceLong);
+        Assert.False(testServiceLong.IsKeyedService);
         Assert.NotNull(testServiceLong.ImplementationFactory);
         Assert.True(testServiceLong.Lifetime == ServiceLifetime.Transient);
 
         var testServiceString = services.SingleOrDefault(x => x.ServiceType == typeof(ITestGeneric<string>));
         Assert.NotNull(testServiceString);
-        Assert.NotNull(testServiceLong.ImplementationFactory);
+        Assert.True(testServiceString.IsKeyedService);
+        Assert.NotNull(testServiceString.KeyedImplementationFactory);
         Assert.True(testServiceString.Lifetime == ServiceLifetime.Transient);
 
         var serviceProvider = services.BuildServiceProvider();
@@ -25,7 +27,7 @@ public partial class ServiceCollectionExtensions
         var testServiceLongInstance = serviceProvider.GetRequiredService<ITestGeneric<long>>();
         Assert.IsType<ProxyImplementation<long>>(testServiceLongInstance);
 
-        var testServiceStringInstance = serviceProvider.GetRequiredService<ITestGeneric<string>>();
+        var testServiceStringInstance = serviceProvider.GetRequiredKeyedService<ITestGeneric<string>>(KeyedServiceConstants.SpecialKeyedService);
         Assert.IsType<ProxyImplementation<string>>(testServiceStringInstance);
     }
 
@@ -38,6 +40,7 @@ public partial class ServiceCollectionExtensions
 
         var testServiceLong = services.SingleOrDefault(x => x.ServiceType == typeof(ITestGeneric<long>));
         Assert.NotNull(testServiceLong);
+        Assert.False(testServiceLong.IsKeyedService);
         Assert.NotNull(testServiceLong.ImplementationFactory);
         Assert.True(testServiceLong.Lifetime == ServiceLifetime.Singleton);
 
@@ -56,6 +59,7 @@ public partial class ServiceCollectionExtensions
 
         var testServiceLong = services.SingleOrDefault(x => x.ServiceType == typeof(ITestGeneric<long>));
         Assert.NotNull(testServiceLong);
+        Assert.False(testServiceLong.IsKeyedService);
         Assert.NotNull(testServiceLong.ImplementationFactory);
         Assert.True(testServiceLong.Lifetime == ServiceLifetime.Transient);
 
@@ -81,7 +85,8 @@ public partial class ServiceCollectionExtensions
 
         var testServiceString = services.SingleOrDefault(x => x.ServiceType == typeof(ITestGeneric<string>));
         Assert.NotNull(testServiceString);
-        Assert.NotNull(testServiceLong.ImplementationFactory);
+        Assert.True(testServiceString.IsKeyedService);
+        Assert.NotNull(testServiceString.KeyedImplementationFactory);
         Assert.True(testServiceString.Lifetime == ServiceLifetime.Transient);
 
         var serviceProvider = services.BuildServiceProvider();
@@ -89,7 +94,7 @@ public partial class ServiceCollectionExtensions
         var testServiceLongInstance = serviceProvider.GetRequiredService<ITestGeneric<long>>();
         Assert.IsType<SecondProxyImplementation<long>>(testServiceLongInstance);
 
-        var testServiceStringInstance = serviceProvider.GetRequiredService<ITestGeneric<string>>();
+        var testServiceStringInstance = serviceProvider.GetRequiredKeyedService<ITestGeneric<string>>(KeyedServiceConstants.SpecialKeyedService);
         Assert.IsType<SecondProxyImplementation<string>>(testServiceStringInstance);
     }
 }

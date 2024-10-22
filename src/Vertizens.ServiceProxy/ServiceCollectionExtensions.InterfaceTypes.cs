@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
 
-namespace ServiceProxy;
+namespace Vertizens.ServiceProxy;
 public static partial class ServiceCollectionExtensions
 {
     /// <summary>
@@ -56,9 +56,11 @@ public static partial class ServiceCollectionExtensions
             if (!(implementationType.IsGenericType && implementationType.GetGenericArguments().Any(a => a.IsGenericTypeParameter)))
             {
                 var customInterfaces = implementationType.GetInterfaces().Where(i => i == interfaceType || (i.IsGenericType && i.GetGenericTypeDefinition() == interfaceType));
+                var keyedServiceAttribute = implementationType.GetCustomAttribute<KeyedServiceAttribute>();
                 foreach (var customInterface in customInterfaces)
                 {
-                    services.Add(new ServiceDescriptor(customInterface, implementationType, serviceLifetime));
+                    var serviceKey = keyedServiceAttribute?.Key;
+                    services.Add(new ServiceDescriptor(customInterface, serviceKey, implementationType, serviceLifetime));
                 }
             }
         }

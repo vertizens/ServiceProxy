@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.11.35327.3
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServiceProxy", "src\ServiceProxy\ServiceProxy.csproj", "{12FA316E-0DCF-42DE-A066-0C05287381EF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Vertizens.ServiceProxy", "src\ServiceProxy\Vertizens.ServiceProxy.csproj", "{12FA316E-0DCF-42DE-A066-0C05287381EF}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{2A681A56-EA6D-48EB-88B7-0FADB15014FD}"
 EndProject
@@ -15,7 +15,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{7A32557F-1038-436C-8993-4412A9F9A891}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceProxy.Tests", "tests\ServiceProxy.Tests\ServiceProxy.Tests.csproj", "{1179B41F-D16A-4576-8A3C-486917BBD614}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Vertizens.ServiceProxy.Tests", "tests\ServiceProxy.Tests\Vertizens.ServiceProxy.Tests.csproj", "{1179B41F-D16A-4576-8A3C-486917BBD614}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

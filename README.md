@@ -1,4 +1,4 @@
-# ServiceProxy
+# Vertizens.ServiceProxy
 
 Wrap Registered .NET DI Services with Cross Cutting concerns
 
@@ -30,6 +30,15 @@ Wraps an already registered service and replaces it with a matching type from a 
 
 So basically an already registered service gets replaced with a type provided.  This effectively builds a 'pipeline' based on the same interface from the lowest layer up.
 
+Use KeyedServiceAttribute to set what key to use for registering a particular service as a keyed service
+
+```
+[KeyedService(KeyedServiceConstants.SpecialKeyedService)]
+internal class TestGenericStringImplementation : ITestGeneric<string>
+```
+
+When AddInterfaceTypes registers TestGenericStringImplementation as ITestGeneric<string> it will do so as keyed service with key value of KeyedServiceConstants.SpecialKeyedService, in this case a string constant.
+
 usage:
 ```
 services.AddServiceProxy(typeof(ProxyImplementation<>));
@@ -48,3 +57,4 @@ services.AddServiceProxy(typeof(AuthorizationImplementation<>));
 ```
 
 Use the same generic interface for the domain implementation, validation, authorization and then layers are registered in order of dependency.
+Note this does respect if a service is registered keyed and so maintains that part of the registration.
