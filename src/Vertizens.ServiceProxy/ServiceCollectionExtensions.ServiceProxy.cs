@@ -13,6 +13,17 @@ public static partial class ServiceCollectionExtensions
     /// <param name="types">One or more types that act as proxies for registered services</param>
     public static IServiceCollection AddServiceProxy(this IServiceCollection services, params Type[] types)
     {
+        return services.AddServiceProxy(null, types);
+    }
+    /// <summary>
+    /// Wraps an already registered service and replaces it with a matching type from <paramref name="types"/>.  Given a type, if its a class and not abstract, find all of its open generic interfaces.
+    /// It then looks through registered services that have a service type of an interface that matches one found above.  The proxy is expected to have a constructor that takes in an instance of the same interface 
+    /// for the purposes of wrapping the functionality of the already registered service.
+    /// </summary>
+    /// <param name="types">One or more types that act as proxies for registered services</param>
+    /// <param name="filter">Provided filter for whether or not to Proxy a particular ServiceType</param>
+    public static IServiceCollection AddServiceProxy(this IServiceCollection services, Func<Type, Type, bool>? filter = null, params Type[] types)
+    {
         var implementationsByInterface = types.Where(x => x.IsClass && !x.IsAbstract).SelectMany(x => x.GetInterfaces()
             .Select(i =>
             {
@@ -28,7 +39,7 @@ public static partial class ServiceCollectionExtensions
         {
             if (serviceDescriptor.ServiceType.IsInterface)
             {
-                var proxyDescriptor = services.AddServiceProxy(serviceDescriptor, implementationsByInterface);
+                var proxyDescriptor = services.AddServiceProxy(serviceDescriptor, implementationsByInterface, filter);
                 if (proxyDescriptor != null)
                 {
                     _proxyDescriptors.Add(proxyDescriptor.ServiceProxy, proxyDescriptor);
@@ -39,15 +50,19 @@ public static partial class ServiceCollectionExtensions
         return services;
     }
 
-    private static ServiceProxyDescriptor? AddServiceProxy(this IServiceCollection services, ServiceDescriptor serviceDescriptor, Dictionary<Type, List<Type>> implementationsByInterface)
+    private static ServiceProxyDescriptor? AddServiceProxy(this IServiceCollection services,
+        ServiceDescriptor serviceDescriptor,
+        Dictionary<Type, List<Type>> implementationsByInterface,
+        Func<Type, Type, bool>? filter = null)
     {
         ServiceProxyDescriptor? proxied = null;
         var serviceType = serviceDescriptor.ServiceType;
-        if (!implementationsByInterface.TryGetValue(serviceType, out var implementationTypes) && serviceDescriptor.ServiceType.IsGenericType)
+        if (!implementationsByInterface.TryGetValue(serviceType, out _) && serviceDescriptor.ServiceType.IsGenericType)
         {
             serviceType = serviceDescriptor.ServiceType.GetGenericTypeDefinition();
         }
-        if (implementationsByInterface.TryGetValue(serviceType, out implementationTypes))
+
+        if (implementationsByInterface.TryGetValue(serviceType, out var implementationTypes))
         {
             ServiceDescriptor? newServiceDescriptor = null;
             var implementationType = implementationTypes.Single();
@@ -57,17 +72,17 @@ public static partial class ServiceCollectionExtensions
                 if ((!serviceDescriptor.IsKeyedService && serviceDescriptor.ImplementationType != null && serviceDescriptor.ImplementationType != implementationType) ||
                     (serviceDescriptor.IsKeyedService && serviceDescriptor.KeyedImplementationType != null && serviceDescriptor.KeyedImplementationType != implementationType))
                 {
-                    newServiceDescriptor = AddServiceProxyFromImplementationType(serviceDescriptor, implementationType);
+                    newServiceDescriptor = AddServiceProxyFromImplementationType(serviceDescriptor, implementationType, filter);
                 }
                 else if ((!serviceDescriptor.IsKeyedService && serviceDescriptor.ImplementationFactory != null) ||
                     (serviceDescriptor.IsKeyedService && serviceDescriptor.KeyedImplementationFactory != null))
                 {
-                    newServiceDescriptor = AddServiceProxyFromImplementationFactory(serviceDescriptor, implementationType);
+                    newServiceDescriptor = AddServiceProxyFromImplementationFactory(serviceDescriptor, implementationType, filter);
                 }
                 else if ((!serviceDescriptor.IsKeyedService && serviceDescriptor.ImplementationInstance != null && serviceDescriptor.ImplementationInstance.GetType() != implementationType) ||
                     (serviceDescriptor.IsKeyedService && serviceDescriptor.KeyedImplementationInstance != null && serviceDescriptor.KeyedImplementationInstance.GetType() != implementationType))
                 {
-                    newServiceDescriptor = AddServiceProxyFromImplementationInstance(serviceDescriptor, implementationType);
+                    newServiceDescriptor = AddServiceProxyFromImplementationInstance(serviceDescriptor, implementationType, filter);
                 }
             }
 
@@ -82,85 +97,94 @@ public static partial class ServiceCollectionExtensions
         return proxied;
     }
 
-    private static ServiceDescriptor? AddServiceProxyFromImplementationInstance(ServiceDescriptor serviceDescriptor, Type implementationType)
+    private static ServiceDescriptor? AddServiceProxyFromImplementationInstance(ServiceDescriptor serviceDescriptor, Type implementationType, Func<Type, Type, bool>? filter = null)
     {
         ServiceDescriptor? newServiceDescriptor = null;
         var newImplementationType = implementationType.IsGenericTypeDefinition ? GetImplementedGenericType(serviceDescriptor.ServiceType, implementationType) : implementationType;
         if (newImplementationType != null)
         {
-            if (serviceDescriptor.IsKeyedService)
+            if (filter == null || filter(serviceDescriptor.ServiceType, newImplementationType))
             {
-                object implementationFactory(IServiceProvider serviceProvider, object? serviceKey)
+                if (serviceDescriptor.IsKeyedService)
                 {
-                    return ActivatorUtilities.CreateInstance(serviceProvider, newImplementationType, serviceDescriptor.KeyedImplementationInstance!);
-                };
-                newServiceDescriptor = new ServiceDescriptor(serviceDescriptor.ServiceType, serviceDescriptor.ServiceKey, implementationFactory, ServiceLifetime.Singleton);
-            }
-            else
-            {
-                object implementationFactory(IServiceProvider serviceProvider)
+                    object implementationFactory(IServiceProvider serviceProvider, object? serviceKey)
+                    {
+                        return ActivatorUtilities.CreateInstance(serviceProvider, newImplementationType, serviceDescriptor.KeyedImplementationInstance!);
+                    };
+                    newServiceDescriptor = new ServiceDescriptor(serviceDescriptor.ServiceType, serviceDescriptor.ServiceKey, implementationFactory, ServiceLifetime.Singleton);
+                }
+                else
                 {
-                    return ActivatorUtilities.CreateInstance(serviceProvider, newImplementationType, serviceDescriptor.ImplementationInstance!);
-                };
-                newServiceDescriptor = new ServiceDescriptor(serviceDescriptor.ServiceType, implementationFactory, ServiceLifetime.Singleton);
+                    object implementationFactory(IServiceProvider serviceProvider)
+                    {
+                        return ActivatorUtilities.CreateInstance(serviceProvider, newImplementationType, serviceDescriptor.ImplementationInstance!);
+                    };
+                    newServiceDescriptor = new ServiceDescriptor(serviceDescriptor.ServiceType, implementationFactory, ServiceLifetime.Singleton);
+                }
             }
         }
 
         return newServiceDescriptor;
     }
 
-    private static ServiceDescriptor? AddServiceProxyFromImplementationFactory(ServiceDescriptor serviceDescriptor, Type implementationType)
+    private static ServiceDescriptor? AddServiceProxyFromImplementationFactory(ServiceDescriptor serviceDescriptor, Type implementationType, Func<Type, Type, bool>? filter = null)
     {
         ServiceDescriptor? newServiceDescriptor = null;
         var newImplementationType = implementationType.IsGenericTypeDefinition ? GetImplementedGenericType(serviceDescriptor.ServiceType, implementationType) : implementationType;
         if (newImplementationType != null)
         {
-            if (serviceDescriptor.IsKeyedService)
+            if (filter == null || filter(serviceDescriptor.ServiceType, newImplementationType))
             {
-                object implementationFactory(IServiceProvider serviceProvider, object? serviceKey)
+                if (serviceDescriptor.IsKeyedService)
                 {
-                    var proxyTarget = serviceDescriptor.KeyedImplementationFactory!(serviceProvider, serviceKey);
-                    return ActivatorUtilities.CreateInstance(serviceProvider, newImplementationType, proxyTarget);
+                    object implementationFactory(IServiceProvider serviceProvider, object? serviceKey)
+                    {
+                        var proxyTarget = serviceDescriptor.KeyedImplementationFactory!(serviceProvider, serviceKey);
+                        return ActivatorUtilities.CreateInstance(serviceProvider, newImplementationType, proxyTarget);
+                    }
+                    newServiceDescriptor = new ServiceDescriptor(serviceDescriptor.ServiceType, serviceDescriptor.ServiceKey, implementationFactory, serviceDescriptor.Lifetime);
                 }
-                newServiceDescriptor = new ServiceDescriptor(serviceDescriptor.ServiceType, serviceDescriptor.ServiceKey, implementationFactory, serviceDescriptor.Lifetime);
-            }
-            else
-            {
-                object implementationFactory(IServiceProvider serviceProvider)
+                else
                 {
-                    var proxyTarget = serviceDescriptor.ImplementationFactory!(serviceProvider);
-                    return ActivatorUtilities.CreateInstance(serviceProvider, newImplementationType, proxyTarget);
+                    object implementationFactory(IServiceProvider serviceProvider)
+                    {
+                        var proxyTarget = serviceDescriptor.ImplementationFactory!(serviceProvider);
+                        return ActivatorUtilities.CreateInstance(serviceProvider, newImplementationType, proxyTarget);
+                    }
+                    newServiceDescriptor = new ServiceDescriptor(serviceDescriptor.ServiceType, implementationFactory, serviceDescriptor.Lifetime);
                 }
-                newServiceDescriptor = new ServiceDescriptor(serviceDescriptor.ServiceType, implementationFactory, serviceDescriptor.Lifetime);
             }
         }
 
         return newServiceDescriptor;
     }
 
-    private static ServiceDescriptor? AddServiceProxyFromImplementationType(ServiceDescriptor serviceDescriptor, Type implementationType)
+    private static ServiceDescriptor? AddServiceProxyFromImplementationType(ServiceDescriptor serviceDescriptor, Type implementationType, Func<Type, Type, bool>? filter = null)
     {
         ServiceDescriptor? newServiceDescriptor = null;
         var newImplementationType = implementationType.IsGenericTypeDefinition ? GetImplementedGenericType(serviceDescriptor.ServiceType, implementationType) : implementationType;
         if (newImplementationType != null)
         {
-            if (serviceDescriptor.IsKeyedService)
+            if (filter == null || filter(serviceDescriptor.ServiceType, newImplementationType))
             {
-                object implementationFactory(IServiceProvider serviceProvider, object? serviceKey)
+                if (serviceDescriptor.IsKeyedService)
                 {
-                    var proxyTarget = ActivatorUtilities.CreateInstance(serviceProvider, serviceDescriptor.KeyedImplementationType!);
-                    return ActivatorUtilities.CreateInstance(serviceProvider, newImplementationType, proxyTarget);
+                    object implementationFactory(IServiceProvider serviceProvider, object? serviceKey)
+                    {
+                        var proxyTarget = ActivatorUtilities.CreateInstance(serviceProvider, serviceDescriptor.KeyedImplementationType!);
+                        return ActivatorUtilities.CreateInstance(serviceProvider, newImplementationType, proxyTarget);
+                    }
+                    newServiceDescriptor = new ServiceDescriptor(serviceDescriptor.ServiceType, serviceDescriptor.ServiceKey, implementationFactory, serviceDescriptor.Lifetime);
                 }
-                newServiceDescriptor = new ServiceDescriptor(serviceDescriptor.ServiceType, serviceDescriptor.ServiceKey, implementationFactory, serviceDescriptor.Lifetime);
-            }
-            else
-            {
-                object implementationFactory(IServiceProvider serviceProvider)
+                else
                 {
-                    var proxyTarget = ActivatorUtilities.CreateInstance(serviceProvider, serviceDescriptor.ImplementationType!);
-                    return ActivatorUtilities.CreateInstance(serviceProvider, newImplementationType, proxyTarget);
+                    object implementationFactory(IServiceProvider serviceProvider)
+                    {
+                        var proxyTarget = ActivatorUtilities.CreateInstance(serviceProvider, serviceDescriptor.ImplementationType!);
+                        return ActivatorUtilities.CreateInstance(serviceProvider, newImplementationType, proxyTarget);
+                    }
+                    newServiceDescriptor = new ServiceDescriptor(serviceDescriptor.ServiceType, implementationFactory, serviceDescriptor.Lifetime);
                 }
-                newServiceDescriptor = new ServiceDescriptor(serviceDescriptor.ServiceType, implementationFactory, serviceDescriptor.Lifetime);
             }
         }
 

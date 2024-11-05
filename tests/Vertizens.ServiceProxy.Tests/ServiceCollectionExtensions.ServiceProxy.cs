@@ -97,4 +97,32 @@ public partial class ServiceCollectionExtensions
         var testServiceStringInstance = serviceProvider.GetRequiredKeyedService<ITestGeneric<string>>(KeyedServiceConstants.SpecialKeyedService);
         Assert.IsType<SecondProxyImplementation<string>>(testServiceStringInstance);
     }
+
+    [Fact]
+    public void AddServiceProxy_WrapImplementationType_Filter()
+    {
+        var services = new ServiceCollection();
+        services.AddInterfaceTypes(typeof(ITestGeneric<>));
+        services.AddServiceProxy((s, i) => s.GetGenericArguments()[0] == typeof(long), typeof(ProxyImplementation<>));
+
+        var testServiceLong = services.SingleOrDefault(x => x.ServiceType == typeof(ITestGeneric<long>));
+        Assert.NotNull(testServiceLong);
+        Assert.False(testServiceLong.IsKeyedService);
+        Assert.NotNull(testServiceLong.ImplementationFactory);
+        Assert.True(testServiceLong.Lifetime == ServiceLifetime.Transient);
+
+        var testServiceString = services.SingleOrDefault(x => x.ServiceType == typeof(ITestGeneric<string>));
+        Assert.NotNull(testServiceString);
+        Assert.True(testServiceString.IsKeyedService);
+        Assert.NotNull(testServiceString.KeyedImplementationType);
+        Assert.True(testServiceString.Lifetime == ServiceLifetime.Transient);
+
+        var serviceProvider = services.BuildServiceProvider();
+
+        var testServiceLongInstance = serviceProvider.GetRequiredService<ITestGeneric<long>>();
+        Assert.IsType<ProxyImplementation<long>>(testServiceLongInstance);
+
+        var testServiceStringInstance = serviceProvider.GetRequiredKeyedService<ITestGeneric<string>>(KeyedServiceConstants.SpecialKeyedService);
+        Assert.IsType<TestGenericStringImplementation>(testServiceStringInstance);
+    }
 }
