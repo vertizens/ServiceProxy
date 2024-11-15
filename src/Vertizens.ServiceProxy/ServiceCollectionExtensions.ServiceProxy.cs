@@ -10,6 +10,7 @@ public static partial class ServiceCollectionExtensions
     /// It then looks through registered services that have a service type of an interface that matches one found above.  The proxy is expected to have a constructor that takes in an instance of the same interface 
     /// for the purposes of wrapping the functionality of the already registered service.
     /// </summary>
+    /// <param name="services">services collection</param>
     /// <param name="types">One or more types that act as proxies for registered services</param>
     public static IServiceCollection AddServiceProxy(this IServiceCollection services, params Type[] types)
     {
@@ -20,6 +21,7 @@ public static partial class ServiceCollectionExtensions
     /// It then looks through registered services that have a service type of an interface that matches one found above.  The proxy is expected to have a constructor that takes in an instance of the same interface 
     /// for the purposes of wrapping the functionality of the already registered service.
     /// </summary>
+    /// <param name="services">services collection</param>
     /// <param name="types">One or more types that act as proxies for registered services</param>
     /// <param name="filter">Provided filter for whether or not to Proxy a particular ServiceType</param>
     public static IServiceCollection AddServiceProxy(this IServiceCollection services, Func<Type, Type, bool>? filter = null, params Type[] types)

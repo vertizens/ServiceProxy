@@ -7,5 +7,8 @@
 [AttributeUsage(AttributeTargets.Class)]
 public class KeyedServiceAttribute(object _key) : Attribute
 {
+    /// <summary>
+    /// Key to use for registration and usage
+    /// </summary>
     public object Key { get { return _key; } }
 }
