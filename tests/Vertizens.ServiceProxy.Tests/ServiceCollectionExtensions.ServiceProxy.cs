@@ -14,13 +14,13 @@ public partial class ServiceCollectionExtensions
         Assert.NotNull(testServiceLong);
         Assert.False(testServiceLong.IsKeyedService);
         Assert.NotNull(testServiceLong.ImplementationFactory);
-        Assert.True(testServiceLong.Lifetime == ServiceLifetime.Transient);
+        Assert.Equal(ServiceLifetime.Transient, testServiceLong.Lifetime);
 
         var testServiceString = services.SingleOrDefault(x => x.ServiceType == typeof(ITestGeneric<string>));
         Assert.NotNull(testServiceString);
         Assert.True(testServiceString.IsKeyedService);
         Assert.NotNull(testServiceString.KeyedImplementationFactory);
-        Assert.True(testServiceString.Lifetime == ServiceLifetime.Transient);
+        Assert.Equal(ServiceLifetime.Transient, testServiceString.Lifetime);
 
         var serviceProvider = services.BuildServiceProvider();
 
@@ -42,7 +42,7 @@ public partial class ServiceCollectionExtensions
         Assert.NotNull(testServiceLong);
         Assert.False(testServiceLong.IsKeyedService);
         Assert.NotNull(testServiceLong.ImplementationFactory);
-        Assert.True(testServiceLong.Lifetime == ServiceLifetime.Singleton);
+        Assert.Equal(ServiceLifetime.Singleton, testServiceLong.Lifetime);
 
         var serviceProvider = services.BuildServiceProvider();
 
@@ -61,7 +61,7 @@ public partial class ServiceCollectionExtensions
         Assert.NotNull(testServiceLong);
         Assert.False(testServiceLong.IsKeyedService);
         Assert.NotNull(testServiceLong.ImplementationFactory);
-        Assert.True(testServiceLong.Lifetime == ServiceLifetime.Transient);
+        Assert.Equal(ServiceLifetime.Transient, testServiceLong.Lifetime);
 
         var serviceProvider = services.BuildServiceProvider();
 
@@ -81,13 +81,13 @@ public partial class ServiceCollectionExtensions
         var testServiceLong = services.SingleOrDefault(x => x.ServiceType == typeof(ITestGeneric<long>));
         Assert.NotNull(testServiceLong);
         Assert.NotNull(testServiceLong.ImplementationFactory);
-        Assert.True(testServiceLong.Lifetime == ServiceLifetime.Transient);
+        Assert.Equal(ServiceLifetime.Transient, testServiceLong.Lifetime);
 
         var testServiceString = services.SingleOrDefault(x => x.ServiceType == typeof(ITestGeneric<string>));
         Assert.NotNull(testServiceString);
         Assert.True(testServiceString.IsKeyedService);
         Assert.NotNull(testServiceString.KeyedImplementationFactory);
-        Assert.True(testServiceString.Lifetime == ServiceLifetime.Transient);
+        Assert.Equal(ServiceLifetime.Transient, testServiceString.Lifetime);
 
         var serviceProvider = services.BuildServiceProvider();
 
@@ -109,13 +109,13 @@ public partial class ServiceCollectionExtensions
         Assert.NotNull(testServiceLong);
         Assert.False(testServiceLong.IsKeyedService);
         Assert.NotNull(testServiceLong.ImplementationFactory);
-        Assert.True(testServiceLong.Lifetime == ServiceLifetime.Transient);
+        Assert.Equal(ServiceLifetime.Transient, testServiceLong.Lifetime);
 
         var testServiceString = services.SingleOrDefault(x => x.ServiceType == typeof(ITestGeneric<string>));
         Assert.NotNull(testServiceString);
         Assert.True(testServiceString.IsKeyedService);
         Assert.NotNull(testServiceString.KeyedImplementationType);
-        Assert.True(testServiceString.Lifetime == ServiceLifetime.Transient);
+        Assert.Equal(ServiceLifetime.Transient, testServiceString.Lifetime);
 
         var serviceProvider = services.BuildServiceProvider();
 

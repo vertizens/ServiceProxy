@@ -12,12 +12,12 @@ public partial class ServiceCollectionExtensions
 
         var testServices = services.Where(x => x.ServiceType == typeof(ITestSimple));
 
-        Assert.True(testServices.Count() == 1);
+        Assert.Single(testServices);
 
         var testService = testServices.Single();
 
         Assert.True(testService.ImplementationType == typeof(TestSimpleImplementation));
-        Assert.True(testService.Lifetime == ServiceLifetime.Transient);
+        Assert.Equal(ServiceLifetime.Transient, testService.Lifetime);
 
         var serviceProvider = services.BuildServiceProvider();
     }
@@ -32,14 +32,14 @@ public partial class ServiceCollectionExtensions
         Assert.NotNull(testServiceLong);
         Assert.False(testServiceLong.IsKeyedService);
         Assert.True(testServiceLong.ImplementationType == typeof(TestGenericLongImplementation));
-        Assert.True(testServiceLong.Lifetime == ServiceLifetime.Scoped);
+        Assert.Equal(ServiceLifetime.Scoped, testServiceLong.Lifetime);
 
         var testServiceString = services.SingleOrDefault(x => x.ServiceType == typeof(ITestGeneric<string>));
         Assert.NotNull(testServiceString);
         Assert.True(testServiceString.IsKeyedService);
         Assert.True((string?)testServiceString.ServiceKey == KeyedServiceConstants.SpecialKeyedService);
         Assert.True(testServiceString.KeyedImplementationType == typeof(TestGenericStringImplementation));
-        Assert.True(testServiceString.Lifetime == ServiceLifetime.Scoped);
+        Assert.Equal(ServiceLifetime.Scoped, testServiceString.Lifetime);
 
         var serviceProvider = services.BuildServiceProvider();
     }

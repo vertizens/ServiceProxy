@@ -5,7 +5,7 @@ namespace Vertizens.ServiceProxy;
 public static partial class ServiceCollectionExtensions
 {
     /// <summary>
-    /// Adds all non-abstract classes that implement an interface <typeparamref name="TInterface"/>.  Uses imlpementation types from calling assembly.
+    /// Adds all non-abstract classes that implement an interface <typeparamref name="TInterface"/>.  Uses implementation types from calling assembly.
     /// </summary>
     /// <typeparam name="TInterface">Interface classes must implement</typeparam>
     public static IServiceCollection AddInterfaceTypes<TInterface>(this IServiceCollection services, ServiceLifetime serviceLifetime = ServiceLifetime.Transient)
@@ -14,7 +14,7 @@ public static partial class ServiceCollectionExtensions
     }
 
     /// <summary>
-    /// Adds all non-abstract classes that implement an interface <typeparamref name="TInterface"/>.  Uses  imlpementation types from passed in assembly.
+    /// Adds all non-abstract classes that implement an interface <typeparamref name="TInterface"/>.  Uses  implementation types from passed in assembly.
     /// </summary>
     /// <typeparam name="TInterface">Interface classes must implement</typeparam>
     /// <param name="assembly">Assembly types to register</param>
@@ -24,7 +24,7 @@ public static partial class ServiceCollectionExtensions
     }
 
     /// <summary>
-    /// Adds all non-abstract classes that implement an interface <typeparamref name="TInterface"/>.  Uses imlpementation types from calling assembly.
+    /// Adds all non-abstract classes that implement an interface <typeparamref name="TInterface"/>.  Uses implementation types from calling assembly.
     /// </summary>
     /// <param name="interfaceType">Interface classes must implement</param>
     public static IServiceCollection AddInterfaceTypes(this IServiceCollection services, Type interfaceType, ServiceLifetime serviceLifetime = ServiceLifetime.Transient)
@@ -33,7 +33,7 @@ public static partial class ServiceCollectionExtensions
     }
 
     /// <summary>
-    /// Adds all non-abstract classes that implement an interface <typeparamref name="TInterface"/>.  Uses  imlpementation types from passed in assembly.
+    /// Adds all non-abstract classes that implement an interface <typeparamref name="TInterface"/>.  Uses  implementation types from passed in assembly.
     /// </summary>
     /// <param name="interfaceType">Interface classes must implement</param>
     /// <param name="assembly">Assembly types to register</param>
@@ -43,7 +43,7 @@ public static partial class ServiceCollectionExtensions
     }
 
     /// <summary>
-    /// Adds all non-abstract classes that implement an interface <typeparamref name="TInterface"/>.  Uses  imlpementation types from <paramref name="types"/>.
+    /// Adds all non-abstract classes that implement an interface <typeparamref name="TInterface"/>.  Uses  implementation types from <paramref name="types"/>.
     /// </summary>
     /// <param name="interfaceType">Interface classes must implement</param>
     /// <param name="serviceLifetime"></param>
